@@ -5,12 +5,9 @@ import io
 import base64
 import re
 from collections import Counter
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
+from github import Github, GithubException
 
-# CSS tối ưu cho giao diện (nền đen, chữ trắng, responsive)
+# CSS tối ưu cho giao diện
 st.markdown("""
     <style>
     .main {
@@ -142,63 +139,47 @@ groups = {
     "Bảng D": ["23DTH1B", "21DTH2C + 20DTH2A", "22DKTPM1A + 24DTH2B", "22DTH2C"]
 }
 
-# Hàm xác thực Google Drive
-def get_drive_service():
-    SCOPES = ['https://www.googleapis.com/auth/drive.file']
-    creds = None
-    if 'google_drive_creds' in st.session_state:
+# Hàm lưu file lên GitHub
+def save_to_github(file_name, file_content):
+    try:
+        g = Github(st.secrets["github"]["github_token"])
+        repo = g.get_repo(f"{st.secrets['github']['github_owner']}/{st.secrets['github']['github_repo']}")
+        file_path = f"data/{file_name}"
         try:
-            creds = Credentials.from_authorized_user_info(st.session_state.google_drive_creds, SCOPES)
-        except ValueError:
-            st.session_state.google_drive_creds = None
-    if not creds or not creds.valid:
-        try:
-            flow = InstalledAppFlow.from_client_config(
-                st.secrets["google_drive"],
-                SCOPES,
-                redirect_uri=f"{st.secrets['app_url']}/_oauth"
-            )
-            auth_url, _ = flow.authorization_url(prompt='consent')
-            st.markdown(f'<a href="{auth_url}" target="_self" style="color: #FFFFFF;">Kích hoạt Google Drive</a>', unsafe_allow_html=True)
-            code = st.experimental_get_query_params().get('code')
-            if code:
-                flow.fetch_token(code=code[0])
-                creds = flow.credentials
-                st.session_state.google_drive_creds = creds.to_json()
-                st.experimental_set_query_params()
-        except KeyError as e:
-            st.error(f"Lỗi: Thiếu khóa {e} trong Streamlit Secrets. Vui lòng cấu hình client_id, client_secret, token_uri, app_url trong Secrets.")
-            st.stop()
-        except Exception as e:
-            st.error(f"Lỗi xác thực Google Drive: {str(e)}. Vui lòng kiểm tra cấu hình Secrets hoặc Google Cloud Console.")
-            st.stop()
-    if creds:
-        return build('drive', 'v3', credentials=creds)
-    return None
+            # Cố gắng lấy file hiện tại để cập nhật
+            contents = repo.get_contents(file_path)
+            repo.update_file(file_path, f"Update {file_name}", file_content, contents.sha)
+        except GithubException as e:
+            if e.status == 404:
+                # Nếu file không tồn tại, tạo mới
+                repo.create_file(file_path, f"Create {file_name}", file_content)
+            else:
+                raise e
+        return file_path
+    except KeyError as e:
+        st.error(f"Lỗi: Thiếu khóa {e} trong Streamlit Secrets. Vui lòng cấu hình github_token, github_owner, github_repo trong Secrets.")
+        st.stop()
+    except GithubException as e:
+        st.error(f"Lỗi GitHub API: {str(e)}. Vui lòng kiểm tra github_token hoặc kho GitHub.")
+        st.stop()
 
-# Hàm lưu file lên Google Drive
-def save_to_drive(service, file_name, file_content, mime_type):
-    file_metadata = {'name': file_name}
-    media = MediaIoBaseUpload(io.BytesIO(file_content), mimetype=mime_type)
-    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-    return file.get('id')
-
-# Hàm tải file từ Google Drive
+# Hàm tải file từ GitHub
 @st.cache_data
-def load_from_drive(service, file_name):
-    results = service.files().list(q=f"name='{file_name}'", fields="files(id, name)").execute()
-    items = results.get('files', [])
-    if items:
-        file_id = items[0]['id']
-        request = service.files().get_media(fileId=file_id)
-        fh = io.BytesIO()
-        downloader = MediaIoBaseDownload(fh, request)
-        done = False
-        while done is False:
-            status, done = downloader.next_chunk()
-        fh.seek(0)
-        return fh.read()
-    return None
+def load_from_github(file_name):
+    try:
+        g = Github(st.secrets["github"]["github_token"])
+        repo = g.get_repo(f"{st.secrets['github']['github_owner']}/{st.secrets['github']['github_repo']}")
+        file_path = f"data/{file_name}"
+        contents = repo.get_contents(file_path)
+        return base64.b64decode(contents.content)
+    except GithubException as e:
+        if e.status == 404:
+            return None
+        st.error(f"Lỗi GitHub API: {str(e)}. Vui lòng kiểm tra github_token hoặc kho GitHub.")
+        st.stop()
+    except KeyError as e:
+        st.error(f"Lỗi: Thiếu khóa {e} trong Streamlit Secrets. Vui lòng cấu hình github_token, github_owner, github_repo trong Secrets.")
+        st.stop()
 
 # Hàm kiểm tra định dạng cầu thủ
 def check_player_format(player):
@@ -527,41 +508,35 @@ with tab4:
 
 # Quản lý dữ liệu
 st.header("Quản lý Dữ liệu")
-drive_service = get_drive_service()
 col_save, col_load = st.columns(2)
 
 with col_save:
-    if st.button("Lưu Dữ liệu lên Google Drive", key="save_data_drive"):
-        if st.session_state.results and drive_service:
+    if st.button("Lưu Dữ liệu lên GitHub", key="save_data_github"):
+        if st.session_state.results:
             json_buffer = io.StringIO()
             json.dump(st.session_state.results, json_buffer, ensure_ascii=False, indent=2)
             file_content = json_buffer.getvalue().encode('utf-8')
-            file_id = save_to_drive(drive_service, "results.json", file_content, "application/json")
-            st.success(f"Đã lưu results.json lên Google Drive (ID: {file_id})!")
-        elif not drive_service:
-            st.warning("Vui lòng kích hoạt Google Drive trước.")
+            file_path = save_to_github("results.json", file_content)
+            st.success(f"Đã lưu results.json lên GitHub (Path: {file_path})!")
         else:
             st.warning("Chưa có dữ liệu để lưu.")
 
 with col_load:
-    if st.button("Tải Dữ liệu từ Google Drive", key="load_data_drive"):
-        if drive_service:
-            file_content = load_from_drive(drive_service, "results.json")
-            if file_content:
-                try:
-                    data = json.loads(file_content.decode('utf-8'))
-                    if isinstance(data, list) and all(isinstance(item, dict) for item in data):
-                        st.session_state.results = data
-                        st.success("Đã tải dữ liệu từ Google Drive!")
-                        st.rerun()
-                    else:
-                        st.error("File JSON không đúng định dạng.")
-                except json.JSONDecodeError:
-                    st.error("Không thể đọc file JSON.")
-            else:
-                st.error("Không tìm thấy file results.json trên Google Drive.")
+    if st.button("Tải Dữ liệu từ GitHub", key="load_data_github"):
+        file_content = load_from_github("results.json")
+        if file_content:
+            try:
+                data = json.loads(file_content.decode('utf-8'))
+                if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+                    st.session_state.results = data
+                    st.success("Đã tải dữ liệu từ GitHub!")
+                    st.rerun()
+                else:
+                    st.error("File JSON không đúng định dạng.")
+            except json.JSONDecodeError:
+                st.error("Không thể đọc file JSON.")
         else:
-            st.warning("Vui lòng kích hoạt Google Drive trước.")
+            st.error("Không tìm thấy file results.json trên GitHub.")
 
 # Lưu/tải cục bộ
 if st.button("Lưu Dữ liệu cục bộ", key="save_data_local"):
@@ -603,24 +578,26 @@ if st.session_state.results:
 
     rankings = calculate_rankings(st.session_state.results)
     df_rankings = pd.DataFrame(rankings)
-    excel_buffer = io.BytesIO()
-    df_rankings.to_excel(excel_buffer, index=False, engine='openpyxl')
-    excel_buffer.seek(0)
-    st.markdown(get_binary_file_downloader_html(excel_buffer.getvalue(), "football_rankings.xlsx"), unsafe_allow_html=True)
+    excel_buffer_rankings = io.BytesIO()
+    df_rankings.to_excel(excel_buffer_rankings, index=False, engine='openpyxl')
+    excel_buffer_rankings.seek(0)
+    st.markdown(get_binary_file_downloader_html(excel_buffer_rankings.getvalue(), "football_rankings.xlsx"), unsafe_allow_html=True)
 
-    csv_buffer = io.StringIO()
-    df_rankings.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
-    csv_content = csv_buffer.getvalue().encode('utf-8-sig')
-    st.markdown(get_binary_file_downloader_html(csv_content, "football_rankings.csv"), unsafe_allow_html=True)
+    csv_buffer_rankings = io.StringIO()
+    df_rankings.to_csv(csv_buffer_rankings, index=False, encoding='utf-8-sig')
+    csv_content_rankings = csv_buffer_rankings.getvalue().encode('utf-8-sig')
+    st.markdown(get_binary_file_downloader_html(csv_content_rankings, "football_rankings.csv"), unsafe_allow_html=True)
 
-    if drive_service:
-        if st.button("Lưu Kết quả lên Google Drive", key="save_results_drive"):
-            save_to_drive(drive_service, "football_match_results.xlsx", excel_buffer.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            save_to_drive(drive_service, "football_match_results.csv", csv_content, "text/csv")
-            st.success("Đã lưu kết quả lên Google Drive!")
-        if st.button("Lưu Bảng Xếp hạng lên Google Drive", key="save_rankings_drive"):
-            save_to_drive(drive_service, "football_rankings.xlsx", excel_buffer.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            save_to_drive(drive_service, "football_rankings.csv", csv_content, "text/csv")
-            st.success("Đã lưu bảng xếp hạng lên Google Drive!")
+    col_export1, col_export2 = st.columns(2)
+    with col_export1:
+        if st.button("Lưu Kết quả lên GitHub", key="save_results_github"):
+            save_to_github("football_match_results.xlsx", excel_buffer.getvalue())
+            save_to_github("football_match_results.csv", csv_content)
+            st.success("Đã lưu kết quả lên GitHub!")
+    with col_export2:
+        if st.button("Lưu Bảng Xếp hạng lên GitHub", key="save_rankings_github"):
+            save_to_github("football_rankings.xlsx", excel_buffer_rankings.getvalue())
+            save_to_github("football_rankings.csv", csv_content_rankings)
+            st.success("Đã lưu bảng xếp hạng lên GitHub!")
 else:
     st.write("Chưa có dữ liệu để xuất.")
