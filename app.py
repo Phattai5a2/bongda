@@ -10,7 +10,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 
-# CSS tối ưu cho mobile với nền đen, chữ trắng, logo phóng to
+# CSS tối ưu cho giao diện (nền đen, chữ trắng, responsive)
 st.markdown("""
     <style>
     .main {
@@ -101,7 +101,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Logo chính thức của Khoa CNTT
+# Logo Khoa CNTT
 st.markdown('<img src="https://cntt.ntt.edu.vn/wp-content/uploads/2025/01/logoweb-3.png" class="logo">', unsafe_allow_html=True)
 
 # Danh sách 26 trận đấu
@@ -147,21 +147,31 @@ def get_drive_service():
     SCOPES = ['https://www.googleapis.com/auth/drive.file']
     creds = None
     if 'google_drive_creds' in st.session_state:
-        creds = Credentials.from_authorized_user_info(st.session_state.google_drive_creds, SCOPES)
+        try:
+            creds = Credentials.from_authorized_user_info(st.session_state.google_drive_creds, SCOPES)
+        except ValueError:
+            st.session_state.google_drive_creds = None
     if not creds or not creds.valid:
-        flow = InstalledAppFlow.from_client_config(
-            st.secrets["google_drive"],
-            SCOPES,
-            redirect_uri=f"{st.secrets['app_url']}/_oauth"
-        )
-        auth_url, _ = flow.authorization_url(prompt='consent')
-        st.markdown(f"[Kích hoạt Google Drive](#)", unsafe_allow_html=True)
-        code = st.experimental_get_query_params().get('code')
-        if code:
-            flow.fetch_token(code=code[0])
-            creds = flow.credentials
-            st.session_state.google_drive_creds = creds.to_json()
-            st.experimental_set_query_params()
+        try:
+            flow = InstalledAppFlow.from_client_config(
+                st.secrets["google_drive"],
+                SCOPES,
+                redirect_uri=f"{st.secrets['app_url']}/_oauth"
+            )
+            auth_url, _ = flow.authorization_url(prompt='consent')
+            st.markdown(f'<a href="{auth_url}" target="_self" style="color: #FFFFFF;">Kích hoạt Google Drive</a>', unsafe_allow_html=True)
+            code = st.experimental_get_query_params().get('code')
+            if code:
+                flow.fetch_token(code=code[0])
+                creds = flow.credentials
+                st.session_state.google_drive_creds = creds.to_json()
+                st.experimental_set_query_params()
+        except KeyError as e:
+            st.error(f"Lỗi: Thiếu khóa {e} trong Streamlit Secrets. Vui lòng cấu hình client_id, client_secret, token_uri, app_url trong Secrets.")
+            st.stop()
+        except Exception as e:
+            st.error(f"Lỗi xác thực Google Drive: {str(e)}. Vui lòng kiểm tra cấu hình Secrets hoặc Google Cloud Console.")
+            st.stop()
     if creds:
         return build('drive', 'v3', credentials=creds)
     return None
@@ -444,7 +454,7 @@ with tab1:
                         st.session_state.current_match_index += 1
                     st.rerun()
 
-# Tab 2: Kết quả Trận đấucon đấu
+# Tab 2: Kết quả Trận đấu
 with tab2:
     st.header("Kết quả Các Trận đấu")
     if st.session_state.results:
@@ -515,7 +525,7 @@ with tab4:
     else:
         st.write("Chưa có dữ liệu để hiển thị thống kê.")
 
-# Quản lý dữ liệu (lưu và tải file JSON từ Google Drive)
+# Quản lý dữ liệu
 st.header("Quản lý Dữ liệu")
 drive_service = get_drive_service()
 col_save, col_load = st.columns(2)
@@ -553,7 +563,7 @@ with col_load:
         else:
             st.warning("Vui lòng kích hoạt Google Drive trước.")
 
-# Tải file JSON cục bộ
+# Lưu/tải cục bộ
 if st.button("Lưu Dữ liệu cục bộ", key="save_data_local"):
     if st.session_state.results:
         json_buffer = io.StringIO()
@@ -563,7 +573,6 @@ if st.button("Lưu Dữ liệu cục bộ", key="save_data_local"):
     else:
         st.warning("Chưa có dữ liệu để lưu.")
 
-# Tải file JSON cục bộ
 uploaded_file = st.file_uploader("Tải File Dữ liệu cục bộ (results.json)", type=["json"], key="upload_data")
 if uploaded_file is not None:
     try:
@@ -577,7 +586,7 @@ if uploaded_file is not None:
     except json.JSONDecodeError:
         st.error("Không thể đọc file JSON.")
 
-# Xuất file Excel/CSV và lưu lên Google Drive
+# Xuất file Excel/CSV
 st.header("Tải Kết quả và Bảng Xếp hạng")
 if st.session_state.results:
     df_results = pd.DataFrame(st.session_state.results)
