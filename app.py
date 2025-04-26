@@ -444,7 +444,7 @@ with tab1:
                         st.session_state.current_match_index += 1
                     st.rerun()
 
-# Tab 2: Kết quả Trận đấu
+# Tab 2: Kết quả Trận đấucon đấu
 with tab2:
     st.header("Kết quả Các Trận đấu")
     if st.session_state.results:
