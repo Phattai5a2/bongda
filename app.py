@@ -363,7 +363,7 @@ with tab1:
                 st.session_state.scorer_team = None
                 st.success("Đã thêm cầu thủ ghi bàn!")
             else:
-                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.", key="scorer_warning")
+                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.")
     with col_scorer2:
         if st.button("Xóa Danh sách Ghi bàn", key="clear_scorers"):
             st.session_state.scorers = []
@@ -387,7 +387,7 @@ with tab1:
                 st.session_state.yellow_team = None
                 st.success("Đã thêm cầu thủ thẻ vàng!")
             else:
-                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.", key="yellow_warning")
+                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.")
     with col_yellow2:
         if st.button("Xóa Danh sách Thẻ vàng", key="clear_yellow"):
             st.session_state.yellow_cards = []
@@ -411,7 +411,7 @@ with tab1:
                 st.session_state.red_team = None
                 st.success("Đã thêm cầu thủ thẻ đỏ!")
             else:
-                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.", key="red_warning")
+                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.")
     with col_red2:
         if st.button("Xóa Danh sách Thẻ đỏ", key="clear_red"):
             st.session_state.red_cards = []
@@ -457,7 +457,7 @@ with tab1:
                 st.rerun()
             else:
                 if any(r["Trận đấu"] == match["Trận đấu"] and r["Ngày"] == match["Ngày"] for r in st.session_state.results):
-                    st.warning("Trận này đã được nhập. Vui lòng chỉnh sửa hoặc chọn trận khác.", key="duplicate_warning")
+                    st.warning("Trận này đã được nhập. Vui lòng chỉnh sửa hoặc chọn trận khác.")
                 else:
                     st.session_state.results.append(result)
                     st.session_state.scorers = []
@@ -528,7 +528,7 @@ with tab4:
     if st.session_state.results:
         goal_stats, yellow_stats, red_stats = calculate_player_stats(st.session_state.results)
         
-        st.subheader("CＣầu thủ Ghi bàn")
+        st.subheader("Cầu thủ Ghi bàn")
         if goal_stats:
             st.dataframe(pd.DataFrame(goal_stats), height=200)
         else:
