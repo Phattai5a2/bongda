@@ -350,7 +350,10 @@ with tab1:
 
     st.subheader("Cầu thủ Ghi bàn")
     scorer_input = st.text_input("Tên cầu thủ (ví dụ: Nguyễn Văn A)", value=st.session_state.scorer_input_value, key="scorer_input")
-    scorer_team = st.selectbox("Chọn đội", [match["Đội 1"], match["Đội 2"]], index=0 if st.session_state.scorer_team is None else [match["Đội 1"], match["Đội 2"].index(st.session_state.scorer_team), key="scorer_team")
+    team_options = [match["Đội 1"], match["Đội 2"]]
+    scorer_team = st.selectbox("Chọn đội", team_options, 
+                             index=team_options.index(st.session_state.scorer_team) if st.session_state.scorer_team in team_options else 0, 
+                             key="scorer_team")
     col_scorer1, col_scorer2 = st.columns(2)
     with col_scorer1:
         if st.button("Thêm Cầu thủ Ghi bàn", key="add_scorer"):
@@ -372,7 +375,9 @@ with tab1:
 
     st.subheader("Cầu thủ Thẻ vàng")
     yellow_input = st.text_input("Tên cầu thủ (ví dụ: Lê Văn C)", value=st.session_state.yellow_input_value, key="yellow_input")
-    yellow_team = st.selectbox("Chọn đội", [match["Đội 1"], match["Đội 2"]], index=0 if st.session_state.yellow_team is None else [match["Đội 1"], match["Đội 2"].index(st.session_state.yellow_team), key="yellow_team")
+    yellow_team = st.selectbox("Chọn đội", team_options, 
+                             index=team_options.index(st.session_state.yellow_team) if st.session_state.yellow_team in team_options else 0, 
+                             key="yellow_team")
     col_yellow1, col_yellow2 = st.columns(2)
     with col_yellow1:
         if st.button("Thêm Cầu thủ Thẻ vàng", key="add_yellow"):
@@ -394,7 +399,9 @@ with tab1:
 
     st.subheader("Cầu thủ Thẻ đỏ")
     red_input = st.text_input("Tên cầu thủ (ví dụ: Phạm Văn D)", value=st.session_state.red_input_value, key="red_input")
-    red_team = st.selectbox("Chọn đội", [match["Đội 1"], match["Đội 2"]], index=0 if st.session_state.red_team is None else [match["Đội 1"], match["Đội 2"].index(st.session_state.red_team), key="red_team")
+    red_team = st.selectbox("Chọn đội", team_options, 
+                          index=team_options.index(st.session_state.red_team) if st.session_state.red_team in team_options else 0, 
+                          key="red_team")
     col_red1, col_red2 = st.columns(2)
     with col_red1:
         if st.button("Thêm Cầu thủ Thẻ đỏ", key="add_red"):
@@ -521,7 +528,7 @@ with tab4:
     if st.session_state.results:
         goal_stats, yellow_stats, red_stats = calculate_player_stats(st.session_state.results)
         
-        st.subheader("Cầu thủ Ghi bàn")
+        st.subheader("CＣầu thủ Ghi bàn")
         if goal_stats:
             st.dataframe(pd.DataFrame(goal_stats), height=200)
         else:
