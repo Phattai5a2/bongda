@@ -105,6 +105,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+st.markdown(
+    """
+    <style>
+    [data-testid="stToolbar"] {
+            visibility: hidden;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 # Danh sách 26 trận đấu
 matches = [
     {"Ngày": "27/04/2025", "Thời gian": "7:00", "Bảng/Vòng": "Bảng A", "Trận đấu": "24DTH1D vs 22DKTPM1B", "Sân": "Sân 1", "Đội 1": "24DTH1D", "Đội 2": "22DKTPM1B"},
