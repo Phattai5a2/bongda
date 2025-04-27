@@ -465,13 +465,9 @@ with tab1:
                 st.session_state.scorers = []
                 st.session_state.yellow_cards = []
                 st.session_state.red_cards = []
-                st.session_state.scorer_input_value = ""
-                st.session_state.yellow_input_value = ""
-                st.session_state.red_input_value = ""
-                st.session_state.scorer_team = None
-                st.session_state.yellow_team = None
-                st.session_state.red_team = None
-                st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
+                st.session_state.temp_reset["scorer"] = True
+                st.session_state.temp_reset["yellow"] = True
+                st.session_state.temp_reset["red"] = True
                 st.success("Đã cập nhật kết quả!")
                 st.rerun()
             else:
@@ -482,13 +478,9 @@ with tab1:
                     st.session_state.scorers = []
                     st.session_state.yellow_cards = []
                     st.session_state.red_cards = []
-                    st.session_state.scorer_input_value = ""
-                    st.session_state.yellow_input_value = ""
-                    st.session_state.red_input_value = ""
-                    st.session_state.scorer_team = None
-                    st.session_state.yellow_team = None
-                    st.session_state.red_team = None
-                    st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
+                    st.session_state.temp_reset["scorer"] = True
+                    st.session_state.temp_reset["yellow"] = True
+                    st.session_state.temp_reset["red"] = True
                     st.success("Đã lưu kết quả!")
                     if st.session_state.current_match_index < len(matches) - 1:
                         st.session_state.current_match_index += 1
