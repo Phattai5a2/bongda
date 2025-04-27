@@ -6,17 +6,6 @@ import base64
 from collections import Counter
 from github import Github, GithubException
 
-st.markdown(
-    """
-    <style>
-    [data-testid="stToolbar"] {
-            visibility: hidden;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # CSS tối ưu cho giao diện
 st.markdown("""
     <style>
