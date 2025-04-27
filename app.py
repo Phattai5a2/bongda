@@ -589,7 +589,7 @@ st.header("Quản lý Dữ liệu")
 col_save, col_load = st.columns(2)
 
 with col_save:
-    if st.button("Lưu Dữ liệu lên GitHub", key="save_data_github"):
+    if st.button("Lưu Dữ liệu lên Cloud", key="save_data_github"):
         if st.session_state.results:
             json_buffer = io.StringIO()
             json.dump(st.session_state.results, json_buffer, ensure_ascii=False, indent=2)
@@ -600,7 +600,7 @@ with col_save:
             st.warning("Chưa có dữ liệu để lưu.")
 
 with col_load:
-    if st.button("Tải Dữ liệu từ GitHub", key="load_data_github"):
+    if st.button("Tải Dữ liệu từ Cloud", key="load_data_github"):
         file_content = load_from_github("results.json")
         if file_content:
             try:
