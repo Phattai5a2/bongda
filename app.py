@@ -303,6 +303,8 @@ if 'yellow_team' not in st.session_state:
     st.session_state.yellow_team = None
 if 'red_team' not in st.session_state:
     st.session_state.red_team = None
+if 'temp_reset' not in st.session_state:
+    st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
 
 # Tabs
 tab1, tab2, tab3, tab4 = st.tabs(["Nhập Kết quả", "Kết quả Trận đấu", "Bảng Xếp hạng", "Thống kê Cá nhân"])
@@ -310,6 +312,20 @@ tab1, tab2, tab3, tab4 = st.tabs(["Nhập Kết quả", "Kết quả Trận đ�
 # Tab 1: Nhập Kết quả
 with tab1:
     st.header("Nhập Kết quả Trận đấu")
+    
+    # Reset trạng thái nếu được đánh dấu
+    if st.session_state.temp_reset["scorer"]:
+        st.session_state.scorer_input_value = ""
+        st.session_state.scorer_team = None
+        st.session_state.temp_reset["scorer"] = False
+    if st.session_state.temp_reset["yellow"]:
+        st.session_state.yellow_input_value = ""
+        st.session_state.yellow_team = None
+        st.session_state.temp_reset["yellow"] = False
+    if st.session_state.temp_reset["red"]:
+        st.session_state.red_input_value = ""
+        st.session_state.red_team = None
+        st.session_state.temp_reset["red"] = False
     
     match = matches[st.session_state.current_match_index]
     st.markdown(f"""
@@ -333,6 +349,7 @@ with tab1:
             st.session_state.scorer_team = None
             st.session_state.yellow_team = None
             st.session_state.red_team = None
+            st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
             st.rerun()
     with col2:
         if st.button("Trận Sau", disabled=st.session_state.current_match_index == len(matches) - 1, key="next_match"):
@@ -346,6 +363,7 @@ with tab1:
             st.session_state.scorer_team = None
             st.session_state.yellow_team = None
             st.session_state.red_team = None
+            st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
             st.rerun()
 
     st.subheader("Cầu thủ Ghi bàn")
@@ -359,9 +377,9 @@ with tab1:
         if st.button("Thêm Cầu thủ Ghi bàn", key="add_scorer"):
             if scorer_input.strip() and scorer_team:
                 st.session_state.scorers.append(f"{scorer_input.strip()} - {scorer_team}")
-                st.session_state.scorer_input_value = ""
-                st.session_state.scorer_team = None
+                st.session_state.temp_reset["scorer"] = True
                 st.success("Đã thêm cầu thủ ghi bàn!")
+                st.rerun()
             else:
                 st.warning("Vui lòng nhập tên cầu thủ và chọn đội.")
     with col_scorer2:
@@ -369,6 +387,7 @@ with tab1:
             st.session_state.scorers = []
             st.session_state.scorer_input_value = ""
             st.session_state.scorer_team = None
+            st.session_state.temp_reset["scorer"] = False
             st.success("Đã xóa danh sách ghi bàn!")
     if st.session_state.scorers:
         st.write("Danh sách ghi bàn: " + ", ".join(st.session_state.scorers))
@@ -383,9 +402,9 @@ with tab1:
         if st.button("Thêm Cầu thủ Thẻ vàng", key="add_yellow"):
             if yellow_input.strip() and yellow_team:
                 st.session_state.yellow_cards.append(f"{yellow_input.strip()} - {yellow_team}")
-                st.session_state.yellow_input_value = ""
-                st.session_state.yellow_team = None
+                st.session_state.temp_reset["yellow"] = True
                 st.success("Đã thêm cầu thủ thẻ vàng!")
+                st.rerun()
             else:
                 st.warning("Vui lòng nhập tên cầu thủ và chọn đội.")
     with col_yellow2:
@@ -393,6 +412,7 @@ with tab1:
             st.session_state.yellow_cards = []
             st.session_state.yellow_input_value = ""
             st.session_state.yellow_team = None
+            st.session_state.temp_reset["yellow"] = False
             st.success("Đã xóa danh sách thẻ vàng!")
     if st.session_state.yellow_cards:
         st.write("Danh sách thẻ vàng: " + ", ".join(st.session_state.yellow_cards))
@@ -407,9 +427,9 @@ with tab1:
         if st.button("Thêm Cầu thủ Thẻ đỏ", key="add_red"):
             if red_input.strip() and red_team:
                 st.session_state.red_cards.append(f"{red_input.strip()} - {red_team}")
-                st.session_state.red_input_value = ""
-                st.session_state.red_team = None
+                st.session_state.temp_reset["red"] = True
                 st.success("Đã thêm cầu thủ thẻ đỏ!")
+                st.rerun()
             else:
                 st.warning("Vui lòng nhập tên cầu thủ và chọn đội.")
     with col_red2:
@@ -417,6 +437,7 @@ with tab1:
             st.session_state.red_cards = []
             st.session_state.red_input_value = ""
             st.session_state.red_team = None
+            st.session_state.temp_reset["red"] = False
             st.success("Đã xóa danh sách thẻ đỏ!")
     if st.session_state.red_cards:
         st.write("Danh sách thẻ đỏ: " + ", ".join(st.session_state.red_cards))
@@ -453,6 +474,7 @@ with tab1:
                 st.session_state.scorer_team = None
                 st.session_state.yellow_team = None
                 st.session_state.red_team = None
+                st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
                 st.success("Đã cập nhật kết quả!")
                 st.rerun()
             else:
@@ -469,6 +491,7 @@ with tab1:
                     st.session_state.scorer_team = None
                     st.session_state.yellow_team = None
                     st.session_state.red_team = None
+                    st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
                     st.success("Đã lưu kết quả!")
                     if st.session_state.current_match_index < len(matches) - 1:
                         st.session_state.current_match_index += 1
@@ -500,11 +523,13 @@ with tab2:
                     st.session_state.scorer_team = None
                     st.session_state.yellow_team = None
                     st.session_state.red_team = None
+                    st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
                     st.rerun()
             with col2:
                 if st.button("Xóa", key="delete_result"):
                     st.session_state.results.pop(result_index)
                     st.session_state.edit_index = None
+                    st.session_state.temp_reset = {"scorer": False, "yellow": False, "red": False}
                     st.success("Đã xóa kết quả!")
                     st.rerun()
     else:
