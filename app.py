@@ -3,7 +3,6 @@ import pandas as pd
 import json
 import io
 import base64
-import re
 from collections import Counter
 from github import Github, GithubException
 
@@ -33,6 +32,14 @@ st.markdown("""
         font-size: 16px;
     }
     .stTextInput>input, .stNumberInput>input {
+        font-size: 16px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #333333;
+        color: #FFFFFF;
+        border: 1px solid #555555;
+    }
+    .stSelectbox select {
         font-size: 16px;
         padding: 10px;
         border-radius: 5px;
@@ -79,7 +86,7 @@ st.markdown("""
             font-size: 16px;
             padding: 8px;
         }
-        .stTextInput>input, .stNumberInput>input {
+        .stTextInput>input, .stNumberInput>input, .stSelectbox select {
             font-size: 14px;
         }
         h1, h2, h3 {
@@ -146,12 +153,10 @@ def save_to_github(file_name, file_content):
         repo = g.get_repo(f"{st.secrets['github']['github_owner']}/{st.secrets['github']['github_repo']}")
         file_path = f"data/{file_name}"
         try:
-            # Cố gắng lấy file hiện tại để cập nhật
             contents = repo.get_contents(file_path)
             repo.update_file(file_path, f"Update {file_name}", file_content, contents.sha)
         except GithubException as e:
             if e.status == 404:
-                # Nếu file không tồn tại, tạo mới
                 repo.create_file(file_path, f"Create {file_name}", file_content)
             else:
                 raise e
@@ -180,12 +185,6 @@ def load_from_github(file_name):
     except KeyError as e:
         st.error(f"Lỗi: Thiếu khóa {e} trong Streamlit Secrets. Vui lòng cấu hình github_token, github_owner, github_repo trong Secrets.")
         st.stop()
-
-# Hàm kiểm tra định dạng cầu thủ
-def check_player_format(player):
-    if not player.strip():
-        return True
-    return re.match(r'.+\s*-\s*.+', player.strip()) is not None
 
 # Hàm tính bảng xếp hạng
 def calculate_rankings(results):
@@ -298,6 +297,12 @@ if 'yellow_input_value' not in st.session_state:
     st.session_state.yellow_input_value = ""
 if 'red_input_value' not in st.session_state:
     st.session_state.red_input_value = ""
+if 'scorer_team' not in st.session_state:
+    st.session_state.scorer_team = None
+if 'yellow_team' not in st.session_state:
+    st.session_state.yellow_team = None
+if 'red_team' not in st.session_state:
+    st.session_state.red_team = None
 
 # Tabs
 tab1, tab2, tab3, tab4 = st.tabs(["Nhập Kết quả", "Kết quả Trận đấu", "Bảng Xếp hạng", "Thống kê Cá nhân"])
@@ -325,6 +330,9 @@ with tab1:
             st.session_state.scorer_input_value = ""
             st.session_state.yellow_input_value = ""
             st.session_state.red_input_value = ""
+            st.session_state.scorer_team = None
+            st.session_state.yellow_team = None
+            st.session_state.red_team = None
             st.rerun()
     with col2:
         if st.button("Trận Sau", disabled=st.session_state.current_match_index == len(matches) - 1, key="next_match"):
@@ -335,56 +343,74 @@ with tab1:
             st.session_state.scorer_input_value = ""
             st.session_state.yellow_input_value = ""
             st.session_state.red_input_value = ""
+            st.session_state.scorer_team = None
+            st.session_state.yellow_team = None
+            st.session_state.red_team = None
             st.rerun()
 
     st.subheader("Cầu thủ Ghi bàn")
-    scorer_input = st.text_input("Tên - Đội (ví dụ: Nguyễn Văn A - 24DTH1D)", value=st.session_state.scorer_input_value, key="scorer_input")
+    scorer_input = st.text_input("Tên cầu thủ (ví dụ: Nguyễn Văn A)", value=st.session_state.scorer_input_value, key="scorer_input")
+    scorer_team = st.selectbox("Chọn đội", [match["Đội 1"], match["Đội 2"]], index=0 if st.session_state.scorer_team is None else [match["Đội 1"], match["Đội 2"].index(st.session_state.scorer_team), key="scorer_team")
     col_scorer1, col_scorer2 = st.columns(2)
     with col_scorer1:
         if st.button("Thêm Cầu thủ Ghi bàn", key="add_scorer"):
-            if scorer_input and check_player_format(scorer_input):
-                st.session_state.scorers.append(scorer_input)
+            if scorer_input.strip() and scorer_team:
+                st.session_state.scorers.append(f"{scorer_input.strip()} - {scorer_team}")
                 st.session_state.scorer_input_value = ""
-            elif scorer_input:
-                st.warning("Vui lòng nhập dạng 'Tên - Đội'.", key="scorer_warning")
+                st.session_state.scorer_team = None
+                st.success("Đã thêm cầu thủ ghi bàn!")
+            else:
+                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.", key="scorer_warning")
     with col_scorer2:
         if st.button("Xóa Danh sách Ghi bàn", key="clear_scorers"):
             st.session_state.scorers = []
             st.session_state.scorer_input_value = ""
+            st.session_state.scorer_team = None
+            st.success("Đã xóa danh sách ghi bàn!")
     if st.session_state.scorers:
         st.write("Danh sách ghi bàn: " + ", ".join(st.session_state.scorers))
 
     st.subheader("Cầu thủ Thẻ vàng")
-    yellow_input = st.text_input("Tên - Đội (ví dụ: Lê Văn C - 24DTH1D)", value=st.session_state.yellow_input_value, key="yellow_input")
+    yellow_input = st.text_input("Tên cầu thủ (ví dụ: Lê Văn C)", value=st.session_state.yellow_input_value, key="yellow_input")
+    yellow_team = st.selectbox("Chọn đội", [match["Đội 1"], match["Đội 2"]], index=0 if st.session_state.yellow_team is None else [match["Đội 1"], match["Đội 2"].index(st.session_state.yellow_team), key="yellow_team")
     col_yellow1, col_yellow2 = st.columns(2)
     with col_yellow1:
         if st.button("Thêm Cầu thủ Thẻ vàng", key="add_yellow"):
-            if yellow_input and check_player_format(yellow_input):
-                st.session_state.yellow_cards.append(yellow_input)
+            if yellow_input.strip() and yellow_team:
+                st.session_state.yellow_cards.append(f"{yellow_input.strip()} - {yellow_team}")
                 st.session_state.yellow_input_value = ""
-            elif yellow_input:
-                st.warning("Vui lòng nhập dạng 'Tên - Đội'.", key="yellow_warning")
+                st.session_state.yellow_team = None
+                st.success("Đã thêm cầu thủ thẻ vàng!")
+            else:
+                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.", key="yellow_warning")
     with col_yellow2:
         if st.button("Xóa Danh sách Thẻ vàng", key="clear_yellow"):
             st.session_state.yellow_cards = []
             st.session_state.yellow_input_value = ""
+            st.session_state.yellow_team = None
+            st.success("Đã xóa danh sách thẻ vàng!")
     if st.session_state.yellow_cards:
         st.write("Danh sách thẻ vàng: " + ", ".join(st.session_state.yellow_cards))
 
     st.subheader("Cầu thủ Thẻ đỏ")
-    red_input = st.text_input("Tên - Đội (ví dụ: Phạm Văn D - 22DKTPM1B)", value=st.session_state.red_input_value, key="red_input")
+    red_input = st.text_input("Tên cầu thủ (ví dụ: Phạm Văn D)", value=st.session_state.red_input_value, key="red_input")
+    red_team = st.selectbox("Chọn đội", [match["Đội 1"], match["Đội 2"]], index=0 if st.session_state.red_team is None else [match["Đội 1"], match["Đội 2"].index(st.session_state.red_team), key="red_team")
     col_red1, col_red2 = st.columns(2)
     with col_red1:
         if st.button("Thêm Cầu thủ Thẻ đỏ", key="add_red"):
-            if red_input and check_player_format(red_input):
-                st.session_state.red_cards.append(red_input)
+            if red_input.strip() and red_team:
+                st.session_state.red_cards.append(f"{red_input.strip()} - {red_team}")
                 st.session_state.red_input_value = ""
-            elif red_input:
-                st.warning("Vui lòng nhập dạng 'Tên - Đội'.", key="red_warning")
+                st.session_state.red_team = None
+                st.success("Đã thêm cầu thủ thẻ đỏ!")
+            else:
+                st.warning("Vui lòng nhập tên cầu thủ và chọn đội.", key="red_warning")
     with col_red2:
         if st.button("Xóa Danh sách Thẻ đỏ", key="clear_red"):
             st.session_state.red_cards = []
             st.session_state.red_input_value = ""
+            st.session_state.red_team = None
+            st.success("Đã xóa danh sách thẻ đỏ!")
     if st.session_state.red_cards:
         st.write("Danh sách thẻ đỏ: " + ", ".join(st.session_state.red_cards))
 
@@ -417,6 +443,9 @@ with tab1:
                 st.session_state.scorer_input_value = ""
                 st.session_state.yellow_input_value = ""
                 st.session_state.red_input_value = ""
+                st.session_state.scorer_team = None
+                st.session_state.yellow_team = None
+                st.session_state.red_team = None
                 st.success("Đã cập nhật kết quả!")
                 st.rerun()
             else:
@@ -430,6 +459,9 @@ with tab1:
                     st.session_state.scorer_input_value = ""
                     st.session_state.yellow_input_value = ""
                     st.session_state.red_input_value = ""
+                    st.session_state.scorer_team = None
+                    st.session_state.yellow_team = None
+                    st.session_state.red_team = None
                     st.success("Đã lưu kết quả!")
                     if st.session_state.current_match_index < len(matches) - 1:
                         st.session_state.current_match_index += 1
@@ -458,6 +490,9 @@ with tab2:
                     st.session_state.scorer_input_value = ""
                     st.session_state.yellow_input_value = ""
                     st.session_state.red_input_value = ""
+                    st.session_state.scorer_team = None
+                    st.session_state.yellow_team = None
+                    st.session_state.red_team = None
                     st.rerun()
             with col2:
                 if st.button("Xóa", key="delete_result"):
@@ -567,7 +602,7 @@ if st.session_state.results:
     df_results = pd.DataFrame(st.session_state.results)
     
     excel_buffer = io.BytesIO()
-    df_results.to_excel(excel_buffer, index=False, engine='openpyxl')
+    df_results.to_excel(excel_buffer, index=False, engine='xlsxwriter')
     excel_buffer.seek(0)
     st.markdown(get_binary_file_downloader_html(excel_buffer.getvalue(), "football_match_results.xlsx"), unsafe_allow_html=True)
 
@@ -579,7 +614,7 @@ if st.session_state.results:
     rankings = calculate_rankings(st.session_state.results)
     df_rankings = pd.DataFrame(rankings)
     excel_buffer_rankings = io.BytesIO()
-    df_rankings.to_excel(excel_buffer_rankings, index=False, engine='openpyxl')
+    df_rankings.to_excel(excel_buffer_rankings, index=False, engine='xlsxwriter')
     excel_buffer_rankings.seek(0)
     st.markdown(get_binary_file_downloader_html(excel_buffer_rankings.getvalue(), "football_rankings.xlsx"), unsafe_allow_html=True)
 
