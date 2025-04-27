@@ -276,7 +276,7 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
     return href
 
 # Giao diện Streamlit
-st.title("Giải Bóng đá Sinh viên Khoa CNTT 2025")
+st.title("Bóng đá SV Khoa CNTT 2025")
 
 # Khởi tạo session state
 if 'results' not in st.session_state:
