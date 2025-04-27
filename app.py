@@ -385,10 +385,9 @@ with tab1:
     with col_scorer2:
         if st.button("Xóa Danh sách Ghi bàn", key="clear_scorers"):
             st.session_state.scorers = []
-            st.session_state.scorer_input_value = ""
-            st.session_state.scorer_team = None
-            st.session_state.temp_reset["scorer"] = False
+            st.session_state.temp_reset["scorer"] = True
             st.success("Đã xóa danh sách ghi bàn!")
+            st.rerun()
     if st.session_state.scorers:
         st.write("Danh sách ghi bàn: " + ", ".join(st.session_state.scorers))
 
@@ -410,10 +409,9 @@ with tab1:
     with col_yellow2:
         if st.button("Xóa Danh sách Thẻ vàng", key="clear_yellow"):
             st.session_state.yellow_cards = []
-            st.session_state.yellow_input_value = ""
-            st.session_state.yellow_team = None
-            st.session_state.temp_reset["yellow"] = False
+            st.session_state.temp_reset["yellow"] = True
             st.success("Đã xóa danh sách thẻ vàng!")
+            st.rerun()
     if st.session_state.yellow_cards:
         st.write("Danh sách thẻ vàng: " + ", ".join(st.session_state.yellow_cards))
 
@@ -435,10 +433,9 @@ with tab1:
     with col_red2:
         if st.button("Xóa Danh sách Thẻ đỏ", key="clear_red"):
             st.session_state.red_cards = []
-            st.session_state.red_input_value = ""
-            st.session_state.red_team = None
-            st.session_state.temp_reset["red"] = False
+            st.session_state.temp_reset["red"] = True
             st.success("Đã xóa danh sách thẻ đỏ!")
+            st.rerun()
     if st.session_state.red_cards:
         st.write("Danh sách thẻ đỏ: " + ", ".join(st.session_state.red_cards))
 
