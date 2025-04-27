@@ -6,19 +6,6 @@ import base64
 from collections import Counter
 from github import Github, GithubException
 
-
-
-st.markdown(
-    """
-    <style>
-    [data-testid="stToolbar"] {
-            visibility: hidden;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # CSS tối ưu cho giao diện
 st.markdown("""
     <style>
@@ -80,12 +67,6 @@ st.markdown("""
     .stDataFrame table {
         color: #FFFFFF;
     }
-    .logo {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        width: 150px;
-    }
     .match-info {
         background-color: #333333;
         padding: 10px;
@@ -120,15 +101,9 @@ st.markdown("""
         .match-info {
             font-size: 14px;
         }
-        .logo {
-            width: 120px;
-        }
     }
     </style>
 """, unsafe_allow_html=True)
-
-# Logo Khoa CNTT
-st.markdown('<img src="https://cntt.ntt.edu.vn/wp-content/uploads/2025/01/logoweb-3.png" class="logo">', unsafe_allow_html=True)
 
 # Danh sách 26 trận đấu
 matches = [
@@ -298,7 +273,7 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
     return href
 
 # Giao diện Streamlit
-st.title("Football manager 2025")
+st.title("🏆 Bóng đá SV Khoa CNTT 2025")
 
 # Khởi tạo session state
 if 'results' not in st.session_state:
@@ -589,7 +564,7 @@ st.header("Quản lý Dữ liệu")
 col_save, col_load = st.columns(2)
 
 with col_save:
-    if st.button("Lưu Dữ liệu lên Cloud", key="save_data_github"):
+    if st.button("Lưu Dữ liệu lên GitHub", key="save_data_github"):
         if st.session_state.results:
             json_buffer = io.StringIO()
             json.dump(st.session_state.results, json_buffer, ensure_ascii=False, indent=2)
@@ -600,7 +575,7 @@ with col_save:
             st.warning("Chưa có dữ liệu để lưu.")
 
 with col_load:
-    if st.button("Tải Dữ liệu từ Cloud", key="load_data_github"):
+    if st.button("Tải Dữ liệu từ GitHub", key="load_data_github"):
         file_content = load_from_github("results.json")
         if file_content:
             try:
