@@ -99,7 +99,7 @@ st.markdown("""
             font-size: 14px;
         }
         .logo {
-            width: 120px;
+            width: 500px;
         }
     }
     </style>
