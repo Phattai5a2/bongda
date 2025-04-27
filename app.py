@@ -6,17 +6,6 @@ import base64
 from collections import Counter
 from github import Github, GithubException
 
-st.markdown(
-    """
-    <style>
-    [data-testid="stToolbar"] {
-            visibility: hidden;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # CSS tối ưu cho giao diện
 st.markdown("""
     <style>
@@ -60,7 +49,13 @@ st.markdown("""
     }
     h1, h2, h3 {
         color: #FFFFFF;
-        font-size: 24px;
+    }
+    h1 {
+        text-align: center;
+        font-size: 20px;
+    }
+    h2, h3 {
+        font-size: 22px;
     }
     .stDataFrame {
         border: 1px solid #555555;
@@ -100,7 +95,10 @@ st.markdown("""
         .stTextInput>input, .stNumberInput>input, .stSelectbox select {
             font-size: 14px;
         }
-        h1, h2, h3 {
+        h1 {
+            font-size: 18px;
+        }
+        h2, h3 {
             font-size: 20px;
         }
         .stDataFrame {
@@ -110,7 +108,7 @@ st.markdown("""
             font-size: 14px;
         }
         .logo {
-            width: 500px;
+            width: 120px;
         }
     }
     </style>
