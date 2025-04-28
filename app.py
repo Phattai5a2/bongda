@@ -52,10 +52,10 @@ st.markdown("""
     }
     h1 {
         text-align: center;
-        font-size: 16px;
+        font-size: 14px;
     }
     h2, h3 {
-        font-size: 22px;
+        font-size: 13px;
     }
     .stDataFrame {
         border: 1px solid #555555;
