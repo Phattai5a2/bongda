@@ -52,7 +52,7 @@ st.markdown("""
     }
     h1 {
         text-align: center;
-        font-size: 20px;
+        font-size: 16px;
     }
     h2, h3 {
         font-size: 22px;
