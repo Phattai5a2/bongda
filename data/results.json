@@ -190,7 +190,7 @@
     "Tỷ số": "2-3",
     "Đội 1 Tỷ số": 2,
     "Đội 2 Tỷ số": 3,
-    "Cầu thủ ghi bàn": "Nguyễn Thành Nghĩa - 22DTH1A, Nguyễn Thành Nghĩa - 22DTH1A, Nguyễn Giảng Nguyên - 23DTH2D, Nguyễn Giảng Nguyên - 23DTH2D, Nguyễn Giảng Nguyên - 23DTH2D",
+    "Cầu thủ ghi bàn": "Nguyễn Thành Nghĩa - 22DTH1A, Nguyễn Văn Nguyên - 23DTH2D, Nguyễn Văn Nguyên - 23DTH2D, Trần Doãn Long - 23DTH2D, Nguyễn Thành Nghĩa - 22DTH1A",
     "Cầu thủ thẻ vàng": "",
     "Cầu thủ thẻ đỏ": ""
   },
@@ -237,6 +237,36 @@
     "Đội 2 Tỷ số": 0,
     "Cầu thủ ghi bàn": "",
     "Cầu thủ thẻ vàng": "",
+    "Cầu thủ thẻ đỏ": ""
+  },
+  {
+    "Ngày": "17/05/2025",
+    "Thời gian": "16:00",
+    "Bảng/Vòng": "Bảng A",
+    "Trận đấu": "22DKTPM1B vs 24DTH2A_1D",
+    "Sân": "Sân 1",
+    "Đội 1": "22DKTPM1B",
+    "Đội 2": "24DTH2A_1D",
+    "Tỷ số": "0-1",
+    "Đội 1 Tỷ số": 0,
+    "Đội 2 Tỷ số": 1,
+    "Cầu thủ ghi bàn": "Nguyễn Hiếu Nhân - 24DTH2A_1D",
+    "Cầu thủ thẻ vàng": "",
+    "Cầu thủ thẻ đỏ": ""
+  },
+  {
+    "Ngày": "17/05/2025",
+    "Thời gian": "16:00",
+    "Bảng/Vòng": "Bảng B",
+    "Trận đấu": "22DKTPM1D vs 22DTH3B_2D + 23DTH1A",
+    "Sân": "Sân 2",
+    "Đội 1": "22DKTPM1D",
+    "Đội 2": "22DTH3B_2D + 23DTH1A",
+    "Tỷ số": "1-2",
+    "Đội 1 Tỷ số": 1,
+    "Đội 2 Tỷ số": 2,
+    "Cầu thủ ghi bàn": "Hồ Thế Duy - 22DTH3B_2D + 23DTH1A, Trần Văn Phúc - 22DTH3B_2D + 23DTH1A, Tưởng Văn Thành Đạt - 22DKTPM1D",
+    "Cầu thủ thẻ vàng": "Hồ Thế Duy - 22DTH3B_2D + 23DTH1A",
     "Cầu thủ thẻ đỏ": ""
   }
 ]
